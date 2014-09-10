@@ -27,37 +27,25 @@ class AverageCalculator():
         dict = {}
         if resultKey == 'Low':
             dict["Low"] = "Low Average"
-         #  return dict['Low']
         elif resultKey == 'Medium':
             dict["Medium"] = "Medium Average"
-         #  print  dict['Medium']
         elif resultKey == 'High':
             dict["High"] = "High Average"
-         #  print  dict['High']
         else:
             dict['Empty'] = "List is empty"
-         #  print  dict['Empty']
         return dict
 
 # lists of list for case study => output depends on the list
-list1 = [11,0,0,9]
+list1 = [11,0,0,21]
 list2 = [6,8]
 list3 = [10,12,14,21]
 list4 = []
 
-#pass the list when initializing the class object.
-defCal = AverageCalculator(list1)
+#pass the list when initializing the class object to get different results
+simpleCal = AverageCalculator(list2)
 # retrieve the result from the created dictionary
-display_list1 = defCal.create_dict(defCal.calculate_average())
-print  display_list1.values()
-''' Display different results
-defCal = AverageCalculator(list2)
-display_list1 = defCal.create_dict(defCal.calculate_average())
-defCal = AverageCalculator(list3)
-display_list1 = defCal.create_dict(defCal.calculate_average())
-defCal = AverageCalculator(list4)
-display_list1 = defCal.create_dict(defCal.calculate_average())
-'''
+dictionaryResult = simpleCal.create_dict(simpleCal.calculate_average())
+print  dictionaryResult.get(simpleCal.calculate_average())      # display the value using 'get' method of dictionary
 
 
 
