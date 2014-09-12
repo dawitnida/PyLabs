@@ -15,57 +15,51 @@ __date__ = "Date: 12.9.2014"
 __version__ = "Version: "
 
 import datetime
-# from datetime import date
+from datetime import timedelta
 import re
 
 class Articles():
     def __int__(self):
         pass
-    # FIXME: Seems like this is working !not check the return
     def process_article(self, article):
         self.article = article
+        # FIXME
+        print article
         def article_detail():
-            self.article = re.split("\/+", articleStore['art_2'])
-            def time_diff():
-                articleDate = datetime.date(int(article1[1]),int(article1[2]),int(article1[3]))
+            #self.article = re.split("\/+", articleStore['art_2'])
+            articleDate = datetime.date(int(article[1]),int(article[2]),int(article[3]))
+            def date_difference():
                 todayDate = datetime.date.today()
                 delta = todayDate - articleDate
-                return delta.days
-            art_tuple = (article1[4], article1[1],article1[2],article1[3], time_diff())
+                if delta.days > 0:
+                    return delta.days
+                return "Invalid Date"
+            def format_date():
+                dformat = "%d-%m-%Y"
+                formattedDate = articleDate.strftime(dformat)
+                return formattedDate
+            art_tuple = (article[4], format_date(), date_difference())  #
             return art_tuple
         return article_detail()
-# TODO: Clean up and loop over the articles
-    def traverse(self, articles):
-        for k in articles:
-            print articles[k]
-articleStore = {
-    'art_0':'articles/2007/06/18/Python_for_computing',
-    'art_1':'articles/2008/08/24/Mastering_Github',
-    'art_2':'articles/2012/12/15/Web_services',
-    'art_3':'articles/2013/04/30/Cloud_computing',
-    'art_4':'articles/2013/04/30/Software_as_a_service'
-}
-
-
+    def chose_article(self):
+        articleStore = {
+            'art_0':'articles/2014/09/14/Python_for_computing',
+            'art_1':'articles/2008/08/24/Mastering_Github',
+            'art_2':'articles/2012/12/15/Web_services',
+            'art_3':'articles/2013/04/30/Cloud_computing',
+            'art_4':'articles/2013/05/30/Software_as_a_service' }
+        print articleStore.keys()
+        self.aKey =  raw_input("Enter article ...")
+        if self.aKey in articleStore:
+            article = re.split("\/+", articleStore[self.aKey])
+            return article
+        else:
+            print 'No article found!'
+            # FIXME
+            print articleStore.keys()
+            self.chose_article()
 art = Articles()
-# art.traverse(articleStore)
-article1 = re.split("\/+", articleStore['art_4'])
-
-print art.process_article(article1)
+article = art.chose_article()
+print art.process_article(article)
 
 
-
-
-
-'''
-
-date_formatted = "%Y-%m-%d"
-d1 = datetime.date(int(article1[1]),int(article1[2]),int(article1[3]))
-d0 = datetime.date.today()
-
-print type(d0), d0
-print type(d1), d1
-
-delta = d0 - d1
-print delta.days
-'''
