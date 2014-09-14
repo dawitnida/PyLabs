@@ -23,7 +23,7 @@ class AverageCalculator():
     # extract a list of numbers and initialize the object, parse out numbers and convert it to data type 'int'
     @classmethod
     def decorate_user_input(self, uInput):
-        self.uInput = uInput                                      # uInput = self.process_user_input()
+        self.uInput = uInput
         regString = re.findall(r'\d+', uInput)
         regList = map(int, regString)
         return regList
