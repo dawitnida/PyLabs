@@ -6,8 +6,10 @@ __author__ = "Dawit Nida (dawit.nida@abo.fi)"
 __date__ = "Date: 19.9.2014"
 __version__ = "Version: "
 
-from friday_helper import read_request, parse_request
 import socket
+import datetime
+from friday_helper import read_request, parse_request
+
 PORT = 8080
 HOST = "127.0.0.1"
 
@@ -45,34 +47,54 @@ def server(handler, port=PORT, host=HOST, queue_size=5):
 def create_document(s):
     return "Content-Type: text/html;\n\r\n\r" + \
            "<html><body>\n\r"+s+"</body></html>\n\r"
-def process_url():
-    pass
+
 def create_response(status ,s):
     return "HTTP/1.1 "+status+"\n\r" + \
            s+"\n\r"
 
-def friday_webapp(inputfile,outputfile):
+def friday_webapp(inputfile, outputfile):
     request = read_request(inputfile)
-    print "Request {}", request
-    strDate = ""
-    if parse_request(request, strDate):
-        response=create_response(
-            "200 OK",
-            create_document(is_it_friday(datetime.date.today()))
+    if parse_request(request, inputfile):
+        url = parse_request(request, inputfile)[1]
+        if validate_date_url(url):
+            date_url = validate_date_url(url)
+            response = create_response(
+                "200 OK",
+                create_document(is_it_friday(date_url))
+                )
+        else:
+           response = create_response(
+            "412 Precondition Failed",
+            create_document("Precondition Failed!")
             )
     else:
-        response=create_response(
+        response = create_response(
             "400 Bad Request",
             create_document("Bad Request pal!")
             )
-    send_response(outputfile,response)
+    send_response(outputfile, response)
 
-def send_response(outputfile,s):
-   outputfile.write(s)
+def send_response(outputfile, s):
+    outputfile.write(s)
 
-import datetime
+#TASK 1
+import re
+import time
+def validate_date_url(url):
+    url = re.sub("^/","", url)
+    if len(url) == 8:
+        try:             # validate the date exist in calendar
+            time.strptime(url, '%d%m%Y')
+            dmy = datetime.date(int(url[4:8]), int(url[2:4]), int(url[0:2]))    #convert the string to datetime Obj
+            return dmy
+        except ValueError:
+            return None
+    else:
+        return None
+
+
 def is_it_friday(d):
-    if d.isoweekday() == 4:
+    if d.isoweekday() == 5:
         return "Yes, it is Friday!"
     else:
         return "Nope."

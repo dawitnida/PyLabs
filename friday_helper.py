@@ -24,24 +24,19 @@ def parse_post_data(inputfile):
     return data_line
 
 def parse_request(request, inputfile):
-    lines=request
-    print "Lines in parse_request{}", lines    #FIXME
-    if len(lines)<1:
+    lines = request
+    if len(lines) < 1:
         return None
     words = lines.split()
-    print "Words in parse_request{}", words, len(words) #FIXME
-    if len(words)<3:
+    if len(words) < 3:
         return None
-    if words[0]=="GET" or words[0]=="POST" and words[2] in ["HTTP/1.0","HTTP/1.1"]:
+    if words[0] == "GET" or words[0] == "POST" and words[2] in ["HTTP/1.0","HTTP/1.1"]:
         method = words[0]
         url = words[1]
-        print "Method" + method + "url" + url + "word 2" + words[2]    #FIXME
-
-        if words[0]=="POST":            #FIXME
+        if words[0]=="POST":
             post_data = parse_post_data(inputfile)
-            # return (method, url, post_data)
-            return True
-        else:                  #FIXME
+            return (method, url, post_data)
+        else:
             return (method, url, [])
-    else:                  #FIXME
-        return False # None
+    else:
+        return None
