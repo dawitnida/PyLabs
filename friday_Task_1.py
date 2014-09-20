@@ -25,6 +25,7 @@ __version__ = "Version: "
 import datetime
 import re
 import time
+import os
 
 from friday_helper import server, parse_request, parse_post_data
 
@@ -33,17 +34,17 @@ def read_request(inputfile):
 
 def create_document(s):
     return "Content-Type: text/html;\n\r\n\r" + \
-           "<html><body>\n\r"+s+"</body></html>\n\r"
+           "<html><body>\n\r" + s + "</body></html>\n\r"
 
-def create_response(status ,s):
+def create_response(status, s):
     return "HTTP/1.1 "+status+"\n\r" + \
            s+"\n\r"
 
 #TASK 2: Form
 def send_form_document():
     return "Content-Type: text/html;\n\r\n\r" + \
-           "<html><body>"+\
-           "<form action=" +  "method ='POST'>" + \
+           "<html><body>" + \
+           "<form action=" + "method ='POST'>" + \
            "Date Text: <input type='text' name='dateText'> <br/>" + \
            "Password: <input type='password' name='passwd'> <br/>" + \
            "<input type='submit'> </form>" + "</body></html>"
@@ -56,9 +57,9 @@ def friday_webapp(inputfile, outputfile):
         if validate_date_url(url):
             date_url = validate_date_url(url)
             response = create_response(
-                "200 OK",
-                create_document(is_it_friday(date_url))
-                )
+                    "200 OK",
+                    create_document(is_it_friday(date_url))
+                    )
         elif validate_dateform_url(url):
             print "Url", parse_request(request, inputfile)[1]
             response = create_response(
@@ -66,13 +67,12 @@ def friday_webapp(inputfile, outputfile):
                     send_form_document()
                     )
         elif validate_log_url(url):
-            print "Log", validate_log_url(url)
             response = create_response(
                     "200 OK",
-                    create_document("File logger")
+                    create_document(read_log())
                     )
         else:
-           response = create_response(
+            response = create_response(
             "412 Precondition Failed",
             create_document("Precondition Failed!")
             )
@@ -88,7 +88,7 @@ def send_response(outputfile, s):
 
 #TASK 1
 def validate_date_url(url):
-    url = re.sub("^/","", url)
+    url = re.sub("^/", "", url)
     if len(url) == 8:
         try:             # validate the date exist in calendar
             time.strptime(url, '%d%m%Y')
@@ -101,7 +101,7 @@ def validate_date_url(url):
 
 #TASK 2
 def validate_dateform_url(url):
-    url = re.sub("^/","", url)
+    url = re.sub("^/", "", url)
     if url == 'dateform':
         return True
     return None
@@ -111,10 +111,30 @@ def process_post_data():
 
 #TASK 3
 def validate_log_url(url):
-    url = re.sub("^/","", url)
+    url = re.sub("^/", "", url)
     if url == 'log':
         return True
     return None
+
+
+#TASK 4: Log
+# Read log file
+def read_log():
+    if os.path.isfile("./log.txt"):
+        with open("log.txt", "r") as logfile:
+            logfile = logfile.read()
+        return logfile
+    else:
+        return "No log found"
+
+# Save log to a file
+def save_log(pwd):
+    logtime = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
+    with open("log.txt", "a") as logfile:
+        logfile.write(logtime + " user entered incorrect password " + pwd + "\n")
+    logfile.close()
+
+# save_log('1245')
 
 
 def is_it_friday(d):
@@ -125,4 +145,3 @@ def is_it_friday(d):
 
 
 server(friday_webapp)
-
