@@ -23,73 +23,132 @@ __date__ = "Date: 19.9.2014"
 __version__ = "Version: "
 
 import datetime
+import socket
 import re
 import time
 import os
 
-from friday_helper import server, parse_request, parse_post_data
+PORT = 8080
+HOST = "127.0.0.1"
 
-def read_request(inputfile):
-    return inputfile.readline()
+
+VALID = 1
+WRONG_PASSWD = 2
+INVALID_DATE = 3
+INVALID_INPUT = 4
+
+
+def read_request(content):
+    return content.readline()
+
+def getHeader(connection):
+    current_chunk = connection.recv(1)
+    recieved_msg = current_chunk
+    while current_chunk != '':
+        current_chunk = connection.recv(1)
+        recieved_msg = recieved_msg + current_chunk
+        if "\r\n\r\n" in recieved_msg:
+            break
+    return recieved_msg
+
+def getContentLenght(header):
+    lines = header.split("\r\n")
+    for line in lines:
+        if "Content-Length:" in line:
+            s = line.split(":")
+            return int(s[1])
+    return 0
+
+def getBody(connection, contentLenght):
+    return connection.recv(contentLenght)
+
+
+def parse_request(request, connection):
+    lines = request
+
+    if len(lines) < 1:
+        return None
+    words = lines.split()
+
+    if len(words) < 3:
+        return None
+    if words[0] == "GET" or words[0] == "POST" and words[2] in ["HTTP/1.0", "HTTP/1.1"]:
+        method = words[0]
+        url = words[1]
+        if words[0] == "POST":
+            content_lenght = getContentLenght(request)
+            if content_lenght != 0:
+                data_line = getBody(connection, content_lenght)
+                return (method, url, data_line)
+        else:
+            return (method, url, [])
+    else:
+        return None
+
+
+def server(handler, port=PORT, host=HOST, queue_size=5):
+
+    dewas_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    dewas_socket.bind((host, port))
+    dewas_socket.listen(queue_size)
+
+    while True:
+        print "Waiting at http://%s:%d" % (host, port)
+        (connection, addr) = dewas_socket.accept()
+        print "New connection", connection, addr
+        handler(connection)
+        connection.close()
+        print "Connection closed."
+
+# check if the user input is valid and password is correct
+# if so proceed to show if it's Friday otherwise return state
+def parse_post_data(data_line):
+    if data_line:
+        date = re.findall(r'\d{8}', data_line)
+        passwd = re.findall(r"&passwd=?(.*)", data_line)
+        if date and date[0] and passwd[0]:
+            acp_date = validate_date_url(date[0])
+            if acp_date:
+                if passwd[0] == "friday":
+                    return (VALID, acp_date)
+                else:
+                    save_log(passwd[0])
+                    return (WRONG_PASSWD, '')
+            return (INVALID_DATE, '')
+    return (INVALID_INPUT, '')
+
+
+def sendResponse(response, connection):
+    connection.sendall(response)
 
 def create_document(s):
     return "Content-Type: text/html;\n\r\n\r" + \
            "<html><body>\n\r" + s + "</body></html>\n\r"
 
 def create_response(status, s):
-    return "HTTP/1.1 "+status+"\n\r" + \
-           s+"\n\r"
+    return "HTTP/1.1 " + status + "\n\r" + \
+           s + "\n\r"
 
-#TASK 2: Form
-def send_form_document():
+# form
+def send_form_document(s):
     return "Content-Type: text/html;\n\r\n\r" + \
            "<html><body>" + \
-           "<form action=" + "method ='POST'>" + \
-           "Date Text: <input type='text' name='dateText'> <br/>" + \
-           "Password: <input type='password' name='passwd'> <br/>" + \
-           "<input type='submit'> </form>" + "</body></html>"
+           "<form method ='POST' action =''" + "target = '_self'>" + \
+           "Date Text: <input type='text' name='dateText' value=''><br>" + \
+           "Password:  <input type='password' name='passwd'><br>" + \
+           "<input type='submit' value='submit'> </form>\n\r" + \
+           s + "</body></html>"
 
-def friday_webapp(inputfile, outputfile):
-    request = read_request(inputfile)
-    if parse_request(request, inputfile):
-        url = parse_request(request, inputfile)[1]
+def remove_slash(params):
+    try:
+        input_url = re.sub("^/", "", params)
+        return input_url
+    except IndexError:
+        return None
 
-        if validate_date_url(url):
-            date_url = validate_date_url(url)
-            response = create_response(
-                    "200 OK",
-                    create_document(is_it_friday(date_url))
-                    )
-        elif validate_dateform_url(url):
-            print "Url", parse_request(request, inputfile)[1]
-            response = create_response(
-                    "200 OK",
-                    send_form_document()
-                    )
-        elif validate_log_url(url):
-            response = create_response(
-                    "200 OK",
-                    create_document(read_log())
-                    )
-        else:
-            response = create_response(
-            "412 Precondition Failed",
-            create_document("Precondition Failed!")
-            )
-    else:
-        response = create_response(
-            "400 Bad Request",
-            create_document("Bad Request pal!")
-            )
-    send_response(outputfile, response)
-
-def send_response(outputfile, s):
-    outputfile.write(s)
-
-#TASK 1
+# check if the inserted date on the url exists and return datetime Obj.
 def validate_date_url(url):
-    url = re.sub("^/", "", url)
-    if len(url) == 8:
+    if (len(url) == 8) & (url.isdigit()):
         try:             # validate the date exist in calendar
             time.strptime(url, '%d%m%Y')
             dmy = datetime.date(int(url[4:8]), int(url[2:4]), int(url[0:2]))    #convert the string to datetime Obj
@@ -99,42 +158,21 @@ def validate_date_url(url):
     else:
         return None
 
-#TASK 2
-def validate_dateform_url(url):
-    url = re.sub("^/", "", url)
-    if url == 'dateform':
-        return True
-    return None
-
-def process_post_data():
-    return 'String'
-
-#TASK 3
-def validate_log_url(url):
-    url = re.sub("^/", "", url)
-    if url == 'log':
-        return True
-    return None
-
-
-#TASK 4: Log
-# Read log file
+# read log file
 def read_log():
     if os.path.isfile("./log.txt"):
         with open("log.txt", "r") as logfile:
-            logfile = logfile.read()
+            logfile = logfile.read().strip('\n')
         return logfile
     else:
         return "No log found"
 
-# Save log to a file
-def save_log(pwd):
+# save log to text file
+def save_log(wrong_pass):
     logtime = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
     with open("log.txt", "a") as logfile:
-        logfile.write(logtime + " user entered incorrect password " + pwd + "\n")
+        logfile.write(logtime + " user entered incorrect password: " + wrong_pass + "\n")
     logfile.close()
-
-# save_log('1245')
 
 
 def is_it_friday(d):
@@ -143,5 +181,60 @@ def is_it_friday(d):
     else:
         return "Nope."
 
+def friday_web_app(connection):
+    response = ""
+    header = getHeader(connection)
+    parameters = parse_request(header, connection)
+    input_url = remove_slash(parameters[1])
+    input_date_url = validate_date_url(input_url)
+    if input_url:
+        if input_date_url:
+            input_date_url = validate_date_url(input_url)
+            response = create_response(
+                "200 OK",
+                create_document(is_it_friday(input_date_url))
+            )
+        elif input_url == 'log':
+            response = create_response(
+                "200 OK",
+                create_document(read_log())
+            )
+        elif input_url == 'dateform':
+            post_data = parse_post_data(parameters[2])
+            if post_data[0] == 1:
+                response = create_response(
+                    "200 OK",
+                    create_document(is_it_friday(post_data[1]))
+                )
+            if post_data[0] == 2:
+                response = create_response(
+                    "200 OK",
+                    send_form_document("Wrong password, was it 'friday'?")
+                )
+            if post_data[0] == 3:
+                response = create_response(
+                    "200 OK",
+                    send_form_document("Check your date, eg. 12121900")
+                )
+            if post_data[0] == 4:
+                response = create_response(
+                    "200 OK",
+                    send_form_document("Enter date[eg. 12122014] and password ='friday'")
+                )
+        else:
+            response = create_response(
+                "400 Bad Request",
+                create_document("Precondition Failed!")
+            )
 
-server(friday_webapp)
+    else:
+        response = create_response(
+            "400 Bad Request",
+            create_document("Bad Request!")
+        )
+
+    sendResponse(response, connection)
+
+server(friday_web_app)
+
+
