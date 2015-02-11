@@ -1,0 +1,21 @@
+    {% extends "base.html" %}
+    {% block title %} Create user {% endblock %}
+    {% block content_register %}
+        <div class ="register">
+            {% if user.is_authenticated %}
+                <p>Hello, {{ user.username }}. Logout first.</p> <hr>
+            {% else %}
+            <p>Welcome, new user. Please register. * Required</p>
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <p> Username: {{ form.username }}</p>
+                <p> Password: {{ form.password1 }} </p>
+                <p> Confirm password: {{ form.password2 }}</p>
+                <p> Firstname: {{ form.first_name }}</p>
+                <p> Lastname: {{ form.last_name }}</p>
+                <p> Email: {{ form.email  }}</p>
+                <input type="submit" name="create" value="Create">
+            </form>
+            {% endif %}
+        </div>
+    {% endblock %}

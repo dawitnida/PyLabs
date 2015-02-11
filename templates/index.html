@@ -1,0 +1,10 @@
+    {% extends "base.html" %}
+    {% block blogtitle %} Home {% endblock %}
+    {% block basecontent %}
+        <div class ="mainContent">
+                {% for post in posts %}
+                  <li> Blog Title: <a href="/myblog/{{ post.id }}"> {{ post.title }} </a>
+                      <p>Author: {{ post.author }}</p>  </li> <br>
+                {% endfor %}
+        </div>
+    {% endblock %}

@@ -1,0 +1,15 @@
+    {% extends "base.html" %}
+    {% block blogtitle %} Add Post {% endblock %}
+    {% block basecontent %}
+        <div class = "mainContent">
+            <h4>{{ message }}</h4>
+            <div class = "postContent">
+                <form method = "post" action = "/addblog/" >
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type = "submit" value = "Save Post" name="save">
+                    <input type = "submit" value = "Cancel" name="cancel">
+                </form>
+            </div>
+        </div>
+    {% endblock %}

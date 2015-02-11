@@ -1,0 +1,19 @@
+   {% extends "base.html" %}
+    {% block title %} Login {% endblock %}
+    {% block content_login %}
+         {% if user.is_authenticated %}
+           <p>Hello, {{ user.username }}. Logout first.</p> <hr>
+         {% else %}
+             <div class ="login">
+                 <form action="" method="post">
+                    {% csrf_token %}
+                      <p>Welcome, pal. Please Login.</p>
+                    <label for="username">Username</label>
+                    <input type="text" name="username" value="" id="username" placeholder="Username"> <br>
+                    <label for="password">Password</label>
+                    <input type="password" name="password" value="" id="password" placeholder="Password">  <br>
+                    <p class="submit"><input type="submit" name="login" value="Login"> </p>
+                 </form>
+             </div>
+        {% endif %}
+    {% endblock %}
