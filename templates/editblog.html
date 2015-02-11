@@ -1,0 +1,17 @@
+    {% extends "base.html" %}
+    {% block blogtitle %} Edit Post {% endblock %}
+        {% block basecontent %}
+        <div class = "mainContent">
+            <h4> {{ message }}. Posted on {{ post.timestamp }} </h4>
+                <div class = "postContent">
+                <form method = "post" action = "/editblog/{{ post.id }}/" >
+                    {% csrf_token %}
+                    <!-- <input type = "text" name = "timestamp" value = "{{ post.timestamp }}"><br> -->
+                    <input type = "text" name = "title" value = "{{ post.title }}"><br>
+                    <textarea name = "content" cols = "60" rows = "15" >{{ post.content | safe }}</textarea><br>
+                    <input type = "submit" value = "Update" name="update">
+                    <input type = "submit" value = "Cancel" name="cancel">
+                </form>
+                </div>
+        </div>
+    {% endblock %}

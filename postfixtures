@@ -1,0 +1,27 @@
+""" Development of Web Applications and Web Services
+
+"""
+
+__author__ = "Dawit Nida (dawit.nida@abo.fi)"
+__date__ = "Date: 6.10.2014"
+__version__ = "Version: "
+
+
+[
+  {
+    "model": "myblog.post",
+    "pk": 1,
+    "fields": {
+      "title": "John",
+      "content": "Lennon"
+    }
+  },
+  {
+    "model": "myblog.post",
+    "pk": 2,
+    "fields": {
+      "title": "Paul",
+      "content": "McCartney"
+    }
+  }
+]
