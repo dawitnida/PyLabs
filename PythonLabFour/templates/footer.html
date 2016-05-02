@@ -1,0 +1,13 @@
+<div class="footer">
+    <hr>
+    <nav id="foot_nav">
+        <a href="/myblog/">Home</a> |
+        <a href="/addblog/">Add New Post</a> |||
+        {% if user.is_authenticated %}
+            <a href="/logout/">Logout</a>
+        {% else %}
+            <a href="/login/">Login</a> |
+            <a href="/createuser/">CreateUser</a>
+        {% endif %}
+    </nav>
+</div>

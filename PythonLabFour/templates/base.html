@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+       <meta charset="UTF-8">
+       <title>{% block blogtitle %} My Blog {% endblock %}</title>
+</head>
+
+<body>
+        <div class ="mainContent">
+         {% if message%}
+           <p> <b>{{ message }}</b> </p>
+         {% endif %}
+        </div>
+        {% if user.is_authenticated %}
+           <p>Hello, {{ user.username }}</p> <hr>
+         {% endif %}
+            {% block basecontent %}
+            {% endblock %}
+            {% block content_register %}
+            {% endblock %}
+            {% block content_login %}
+            {% endblock %}
+
+    {% include "footer.html" %}
+</body>
+</html>

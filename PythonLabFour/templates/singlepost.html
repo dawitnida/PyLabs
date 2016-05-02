@@ -1,0 +1,16 @@
+    {% extends "base.html" %}
+    {% block blogtitle %} View Post {% endblock %}
+    {% block basecontent %}
+        <div class ="mainContent">
+            <div class ="postContent">
+                <p> Date: {{ post.timestamp }} </p>
+                <p>Title: {{ post.title | safe }} </p>
+                <p>Content: {{ post.content | safe }} </p>
+                <p>Author: {{ post.author }} </p>
+            </div>
+            <nav id ="detail_nav">
+                <a href="/editblog/{{ post.id }}/"> Edit Post </a> |
+                <a href="/deleteblog/{{ post.id }}/"> Delete Post </a>
+            </nav>
+        </div>
+    {% endblock %}
